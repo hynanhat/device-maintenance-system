@@ -1,0 +1,555 @@
+{
+  "info": {
+    "_postman_id": "device-maintenance-api-v1",
+    "name": "Device Maintenance System API",
+    "description": "He thong Quan ly Bao tri Thiet bi - De tai 4\n\nHuong dan su dung:\n1. Chay login de lay token\n2. Token tu dong luu vao bien {{token}}\n3. Tat ca request da co Authorization header tu dong",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080/api", "type": "string"},
+    {"key": "token", "value": "", "type": "string"},
+    {"key": "refreshToken", "value": "", "type": "string"}
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login - Admin",
+          "event": [{"listen": "test","script": {"exec": ["var json = pm.response.json();","if(json.success && json.data) {","  pm.collectionVariables.set('token', json.data.accessToken);","  pm.collectionVariables.set('refreshToken', json.data.refreshToken);","  pm.test('Login thanh cong', function() { pm.response.to.have.status(200); });","  console.log('Token saved:', json.data.accessToken.substring(0,30) + '...');","}"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "Login - Manager",
+          "event": [{"listen": "test","script": {"exec": ["var json = pm.response.json();","if(json.success && json.data) {","  pm.collectionVariables.set('token', json.data.accessToken);","  pm.collectionVariables.set('refreshToken', json.data.refreshToken);","}"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"username\": \"manager\",\n  \"password\": \"manager123\"\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "Login - Technician",
+          "event": [{"listen": "test","script": {"exec": ["var json = pm.response.json();","if(json.success) pm.collectionVariables.set('token', json.data.accessToken);"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"username\": \"tech1\",\n  \"password\": \"tech123\"\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "Register - Tao tai khoan moi",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"123456\",\n  \"email\": \"newuser@test.com\",\n  \"fullName\": \"Nguyen Van New\",\n  \"phone\": \"0909999999\",\n  \"role\": \"ROLE_USER\"\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"]}
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{"listen": "test","script": {"exec": ["var json = pm.response.json();","if(json.success) pm.collectionVariables.set('token', json.data.accessToken);"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST", "header": [],
+            "url": {"raw": "{{baseUrl}}/auth/refresh?refreshToken={{refreshToken}}", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"], "query": [{"key": "refreshToken", "value": "{{refreshToken}}"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Management",
+      "item": [
+        {
+          "name": "GET - Thong tin ca nhan (me)",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"]}
+          }
+        },
+        {
+          "name": "PUT - Cap nhat thong tin ca nhan",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"fullName\": \"Nguyen Van Admin Updated\",\n  \"phone\": \"0901111111\",\n  \"email\": \"admin_new@maintenance.com\"\n}"},
+            "url": {"raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"]}
+          }
+        },
+        {
+          "name": "POST - Doi mat khau",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"currentPassword\": \"admin123\",\n  \"newPassword\": \"newpass123\",\n  \"confirmPassword\": \"newpass123\"\n}"},
+            "url": {"raw": "{{baseUrl}}/users/me/change-password", "host": ["{{baseUrl}}"], "path": ["users", "me", "change-password"]}
+          }
+        },
+        {
+          "name": "POST - Upload Avatar",
+          "request": {
+            "method": "POST", "header": [],
+            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]},
+            "url": {"raw": "{{baseUrl}}/users/me/avatar", "host": ["{{baseUrl}}"], "path": ["users", "me", "avatar"]}
+          }
+        },
+        {
+          "name": "GET - Danh sach tat ca users [Admin]",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"]}
+          }
+        },
+        {
+          "name": "GET - User theo ID [Admin]",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/users/1", "host": ["{{baseUrl}}"], "path": ["users", "1"]}
+          }
+        },
+        {
+          "name": "POST - Tao user [Admin]",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"username\": \"tech3\",\n  \"password\": \"tech123\",\n  \"email\": \"tech3@maintenance.com\",\n  \"fullName\": \"Vo Van Technician\",\n  \"phone\": \"0906789012\",\n  \"role\": \"ROLE_TECHNICIAN\"\n}"},
+            "url": {"raw": "{{baseUrl}}/users/admin/create", "host": ["{{baseUrl}}"], "path": ["users", "admin", "create"]}
+          }
+        },
+        {
+          "name": "PATCH - Bat-Tat tai khoan [Admin]",
+          "request": {
+            "method": "PATCH", "header": [],
+            "url": {"raw": "{{baseUrl}}/users/5/toggle-status", "host": ["{{baseUrl}}"], "path": ["users", "5", "toggle-status"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa user [Admin]",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/users/5", "host": ["{{baseUrl}}"], "path": ["users", "5"]}
+          }
+        },
+        {
+          "name": "GET - Danh sach ky thuat vien",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/users/technicians", "host": ["{{baseUrl}}"], "path": ["users", "technicians"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Dashboard",
+      "item": [
+        {
+          "name": "GET - Thong ke tong quan [Admin/Manager]",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/dashboard", "host": ["{{baseUrl}}"], "path": ["dashboard"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Device Management",
+      "item": [
+        {
+          "name": "GET - Danh sach thiet bi (co loc va phan trang)",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices?page=0&size=10&sortBy=createdAt&direction=desc", "host": ["{{baseUrl}}"], "path": ["devices"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"},{"key": "sortBy","value": "createdAt"},{"key": "direction","value": "desc"},{"key": "keyword","value": "","disabled": true},{"key": "status","value": "ACTIVE","disabled": true},{"key": "location","value": "","disabled": true}]}
+          }
+        },
+        {
+          "name": "GET - Tim kiem thiet bi theo tu khoa",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices?keyword=may lanh&page=0&size=10", "host": ["{{baseUrl}}"], "path": ["devices"], "query": [{"key": "keyword","value": "may lanh"},{"key": "page","value": "0"},{"key": "size","value": "10"}]}
+          }
+        },
+        {
+          "name": "GET - Loc theo trang thai ACTIVE",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices?status=ACTIVE", "host": ["{{baseUrl}}"], "path": ["devices"], "query": [{"key": "status","value": "ACTIVE"}]}
+          }
+        },
+        {
+          "name": "GET - Thiet bi dang hoat dong",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices/active", "host": ["{{baseUrl}}"], "path": ["devices", "active"]}
+          }
+        },
+        {
+          "name": "GET - Chi tiet thiet bi theo ID",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices/1", "host": ["{{baseUrl}}"], "path": ["devices", "1"]}
+          }
+        },
+        {
+          "name": "GET - Tim theo ma thiet bi",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices/code/DEV-001", "host": ["{{baseUrl}}"], "path": ["devices", "code", "DEV-001"]}
+          }
+        },
+        {
+          "name": "POST - Them thiet bi moi [Admin/Manager]",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"deviceCode\": \"DEV-005\",\n  \"name\": \"He Thong Camera An Ninh\",\n  \"deviceType\": \"Camera giam sat\",\n  \"manufacturer\": \"Hikvision\",\n  \"modelNumber\": \"DS-2CD2143G2-I\",\n  \"serialNumber\": \"SN-2023-005\",\n  \"purchaseDate\": \"2023-01-15\",\n  \"warrantyExpiryDate\": \"2026-01-15\",\n  \"purchasePrice\": 50000000,\n  \"status\": \"ACTIVE\",\n  \"location\": \"Tang 2\",\n  \"locationDetail\": \"Hanh lang va lo ra vao\",\n  \"description\": \"He thong 32 camera Full HD, luu tru 30 ngay\",\n  \"maintenanceCycleDays\": 180\n}"},
+            "url": {"raw": "{{baseUrl}}/devices", "host": ["{{baseUrl}}"], "path": ["devices"]}
+          }
+        },
+        {
+          "name": "PUT - Cap nhat thiet bi [Admin/Manager]",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"deviceCode\": \"DEV-001\",\n  \"name\": \"May Lanh Daikin P1 - Updated\",\n  \"deviceType\": \"He thong dieu hoa\",\n  \"manufacturer\": \"Daikin\",\n  \"modelNumber\": \"FTKS35GVMW-V2\",\n  \"location\": \"Tang 1\",\n  \"locationDetail\": \"Phong hop A101 - Cap nhat\",\n  \"maintenanceCycleDays\": 60\n}"},
+            "url": {"raw": "{{baseUrl}}/devices/1", "host": ["{{baseUrl}}"], "path": ["devices", "1"]}
+          }
+        },
+        {
+          "name": "PATCH - Cap nhat trang thai thiet bi",
+          "request": {
+            "method": "PATCH", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices/1/status?status=UNDER_MAINTENANCE", "host": ["{{baseUrl}}"], "path": ["devices", "1", "status"], "query": [{"key": "status","value": "UNDER_MAINTENANCE"}]}
+          }
+        },
+        {
+          "name": "POST - Upload anh thiet bi [Admin/Manager]",
+          "request": {
+            "method": "POST", "header": [],
+            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]},
+            "url": {"raw": "{{baseUrl}}/devices/1/image", "host": ["{{baseUrl}}"], "path": ["devices", "1", "image"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa thiet bi [Admin/Manager]",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/devices/5", "host": ["{{baseUrl}}"], "path": ["devices", "5"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Maintenance Schedules",
+      "item": [
+        {
+          "name": "GET - Danh sach lich bao tri (co loc)",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules?page=0&size=10&sortBy=scheduledDate&direction=asc", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"},{"key": "sortBy","value": "scheduledDate"},{"key": "direction","value": "asc"},{"key": "status","value": "SCHEDULED","disabled": true},{"key": "deviceId","value": "1","disabled": true},{"key": "technicianId","value": "3","disabled": true}]}
+          }
+        },
+        {
+          "name": "GET - Lich sap toi (7 ngay)",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules/upcoming?days=7", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules", "upcoming"], "query": [{"key": "days","value": "7"}]}
+          }
+        },
+        {
+          "name": "GET - Lich qua han",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules/overdue", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules", "overdue"]}
+          }
+        },
+        {
+          "name": "GET - Chi tiet lich bao tri",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules/1", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules", "1"]}
+          }
+        },
+        {
+          "name": "POST - Tao lich bao tri moi [Admin/Manager]",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Kiem tra dinh ky he thong PCCC\",\n  \"maintenanceType\": \"Dinh ky\",\n  \"description\": \"Kiem tra van phun nuoc, bao chay, binh bot\",\n  \"scheduledDate\": \"2024-02-15T09:00:00\",\n  \"estimatedDurationHours\": 3,\n  \"deviceId\": 4,\n  \"assignedTechnicianId\": 3,\n  \"cost\": 1500000,\n  \"notes\": \"Can ngung hoat dong khu vuc kiem tra\"\n}"},
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules"]}
+          }
+        },
+        {
+          "name": "PUT - Cap nhat lich bao tri",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Bao tri dinh ky May Lanh Daikin P1 - Cap nhat\",\n  \"maintenanceType\": \"Dinh ky\",\n  \"scheduledDate\": \"2024-02-10T08:00:00\",\n  \"estimatedDurationHours\": 3,\n  \"deviceId\": 1,\n  \"assignedTechnicianId\": 3,\n  \"cost\": 700000,\n  \"status\": \"IN_PROGRESS\"\n}"},
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules/1", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules", "1"]}
+          }
+        },
+        {
+          "name": "PATCH - Hoan thanh bao tri",
+          "request": {
+            "method": "PATCH", "header": [],
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules/1/complete?cost=650000&notes=Da hoan thanh, thiet bi hoat dong binh thuong", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules", "1", "complete"], "query": [{"key": "cost","value": "650000"},{"key": "notes","value": "Da hoan thanh, thiet bi hoat dong binh thuong"}]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa lich bao tri [Admin/Manager]",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/maintenance-schedules/4", "host": ["{{baseUrl}}"], "path": ["maintenance-schedules", "4"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Incident Management",
+      "item": [
+        {
+          "name": "GET - Danh sach su co (co loc)",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/incidents?page=0&size=10&sortBy=createdAt&direction=desc", "host": ["{{baseUrl}}"], "path": ["incidents"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"},{"key": "sortBy","value": "createdAt"},{"key": "direction","value": "desc"},{"key": "keyword","value": "","disabled": true},{"key": "status","value": "REPORTED","disabled": true},{"key": "severity","value": "HIGH","disabled": true},{"key": "deviceId","value": "1","disabled": true}]}
+          }
+        },
+        {
+          "name": "GET - Chi tiet su co",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/incidents/1", "host": ["{{baseUrl}}"], "path": ["incidents", "1"]}
+          }
+        },
+        {
+          "name": "POST - Bao cao su co moi",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"He thong camera tang 2 mat tin hieu\",\n  \"description\": \"Camera khu vuc hanh lang tang 2 khong hien thi hinh anh, co the do day cap bi hong\",\n  \"severity\": \"MEDIUM\",\n  \"deviceId\": 5,\n  \"occurredAt\": \"2024-01-20T14:30:00\"\n}"},
+            "url": {"raw": "{{baseUrl}}/incidents", "host": ["{{baseUrl}}"], "path": ["incidents"]}
+          }
+        },
+        {
+          "name": "PUT - Cap nhat su co",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"May lanh P1 khong lanh - Da kiem tra\",\n  \"description\": \"Kiem tra phat hien gas lanh bi that thoat, can nan bo sung\",\n  \"severity\": \"HIGH\",\n  \"status\": \"IN_PROGRESS\",\n  \"deviceId\": 1,\n  \"assignedTechnicianId\": 3\n}"},
+            "url": {"raw": "{{baseUrl}}/incidents/1", "host": ["{{baseUrl}}"], "path": ["incidents", "1"]}
+          }
+        },
+        {
+          "name": "PATCH - Phan cong ky thuat vien [Admin/Manager]",
+          "request": {
+            "method": "PATCH", "header": [],
+            "url": {"raw": "{{baseUrl}}/incidents/2/assign?technicianId=4", "host": ["{{baseUrl}}"], "path": ["incidents", "2", "assign"], "query": [{"key": "technicianId","value": "4"}]}
+          }
+        },
+        {
+          "name": "PATCH - Giai quyet su co",
+          "request": {
+            "method": "PATCH", "header": [],
+            "url": {"raw": "{{baseUrl}}/incidents/1/resolve?resolutionNote=Da nan them gas lanh va kiem tra toan bo he thong, thiet bi hoat dong binh thuong", "host": ["{{baseUrl}}"], "path": ["incidents", "1", "resolve"], "query": [{"key": "resolutionNote","value": "Da nan them gas lanh va kiem tra toan bo he thong, thiet bi hoat dong binh thuong"}]}
+          }
+        },
+        {
+          "name": "POST - Upload anh su co",
+          "request": {
+            "method": "POST", "header": [],
+            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": ""}]},
+            "url": {"raw": "{{baseUrl}}/incidents/1/image", "host": ["{{baseUrl}}"], "path": ["incidents", "1", "image"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa su co [Admin/Manager]",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/incidents/3", "host": ["{{baseUrl}}"], "path": ["incidents", "3"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Repair History",
+      "item": [
+        {
+          "name": "GET - Danh sach lich su sua chua",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/repair-histories?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["repair-histories"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"},{"key": "deviceId","value": "1","disabled": true},{"key": "keyword","value": "","disabled": true}]}
+          }
+        },
+        {
+          "name": "GET - Lich su sua chua theo thiet bi ID",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/repair-histories?deviceId=1&page=0&size=10", "host": ["{{baseUrl}}"], "path": ["repair-histories"], "query": [{"key": "deviceId","value": "1"},{"key": "page","value": "0"},{"key": "size","value": "10"}]}
+          }
+        },
+        {
+          "name": "GET - Chi tiet sua chua",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/repair-histories/1", "host": ["{{baseUrl}}"], "path": ["repair-histories", "1"]}
+          }
+        },
+        {
+          "name": "GET - Tong chi phi sua chua theo thiet bi",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/repair-histories/device/1/total-cost", "host": ["{{baseUrl}}"], "path": ["repair-histories", "device", "1", "total-cost"]}
+          }
+        },
+        {
+          "name": "POST - Ghi nhan sua chua moi",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Nan gas lanh va ve sinh be hoi\",\n  \"repairType\": \"Sua chua\",\n  \"description\": \"Nan 500g gas R32, ve sinh be hoi ngoai troi, kiem tra ap suat he thong\",\n  \"repairDate\": \"2024-01-22T10:00:00\",\n  \"cost\": 800000,\n  \"partsReplaced\": \"Gas lanh R32 500g\",\n  \"technicianNote\": \"Ap suat sau sua chua dat tieu chuan, may hoat dong binh thuong\",\n  \"deviceId\": 1,\n  \"incidentId\": 1,\n  \"performedById\": 3\n}"},
+            "url": {"raw": "{{baseUrl}}/repair-histories", "host": ["{{baseUrl}}"], "path": ["repair-histories"]}
+          }
+        },
+        {
+          "name": "PUT - Cap nhat lich su sua chua",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Nan gas lanh va ve sinh - Cap nhat\",\n  \"repairType\": \"Sua chua\",\n  \"repairDate\": \"2024-01-22T10:00:00\",\n  \"cost\": 850000,\n  \"technicianNote\": \"Cap nhat: Da kiem tra lai sau 24h, may van hoat dong on dinh\",\n  \"deviceId\": 1\n}"},
+            "url": {"raw": "{{baseUrl}}/repair-histories/1", "host": ["{{baseUrl}}"], "path": ["repair-histories", "1"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa lich su sua chua [Admin/Manager]",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/repair-histories/1", "host": ["{{baseUrl}}"], "path": ["repair-histories", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Forum",
+      "item": [
+        {
+          "name": "GET - Danh sach bai viet",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/forum/posts?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["forum", "posts"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"},{"key": "keyword","value": "","disabled": true},{"key": "category","value": "","disabled": true}]}
+          }
+        },
+        {
+          "name": "GET - Chi tiet bai viet",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/forum/posts/1", "host": ["{{baseUrl}}"], "path": ["forum", "posts", "1"]}
+          }
+        },
+        {
+          "name": "POST - Tao bai viet moi",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Kinh nghiem xu ly loi may lanh khong lanh\",\n  \"content\": \"Chia se mot so buoc kiem tra khi gap loi may lanh khong lanh:\\n1. Kiem tra boc phong\\n2. Kiem tra ap suat gas\\n3. Kiem tra mo to quat\\nHy vong huu ich cho moi nguoi!\",\n  \"category\": \"Ky thuat\",\n  \"isPinned\": false\n}"},
+            "url": {"raw": "{{baseUrl}}/forum/posts", "host": ["{{baseUrl}}"], "path": ["forum", "posts"]}
+          }
+        },
+        {
+          "name": "PUT - Cap nhat bai viet",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Kinh nghiem xu ly loi may lanh - Cap nhat them thong tin\",\n  \"content\": \"Noi dung cap nhat...\",\n  \"category\": \"Ky thuat\"\n}"},
+            "url": {"raw": "{{baseUrl}}/forum/posts/1", "host": ["{{baseUrl}}"], "path": ["forum", "posts", "1"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa bai viet",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/forum/posts/1", "host": ["{{baseUrl}}"], "path": ["forum", "posts", "1"]}
+          }
+        },
+        {
+          "name": "GET - Binh luan cua bai viet",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/forum/posts/1/comments", "host": ["{{baseUrl}}"], "path": ["forum", "posts", "1", "comments"]}
+          }
+        },
+        {
+          "name": "POST - Them binh luan",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"content\": \"Rat huu ich! Cam on ban da chia se kinh nghiem.\",\n  \"parentCommentId\": null\n}"},
+            "url": {"raw": "{{baseUrl}}/forum/posts/1/comments", "host": ["{{baseUrl}}"], "path": ["forum", "posts", "1", "comments"]}
+          }
+        },
+        {
+          "name": "POST - Reply binh luan (co parentCommentId)",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"content\": \"Cam on ban, minh se thu ngay!\",\n  \"parentCommentId\": 1\n}"},
+            "url": {"raw": "{{baseUrl}}/forum/posts/1/comments", "host": ["{{baseUrl}}"], "path": ["forum", "posts", "1", "comments"]}
+          }
+        },
+        {
+          "name": "PUT - Chinh sua binh luan",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"content\": \"Noi dung binh luan da chinh sua\"\n}"},
+            "url": {"raw": "{{baseUrl}}/forum/comments/1", "host": ["{{baseUrl}}"], "path": ["forum", "comments", "1"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa binh luan",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/forum/comments/1", "host": ["{{baseUrl}}"], "path": ["forum", "comments", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Support Tickets",
+      "item": [
+        {
+          "name": "GET - Tat ca tickets [Admin/Manager]",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/support-tickets?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["support-tickets"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"},{"key": "status","value": "OPEN","disabled": true}]}
+          }
+        },
+        {
+          "name": "GET - Tickets cua toi",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/support-tickets/my-tickets?page=0&size=10", "host": ["{{baseUrl}}"], "path": ["support-tickets", "my-tickets"], "query": [{"key": "page","value": "0"},{"key": "size","value": "10"}]}
+          }
+        },
+        {
+          "name": "GET - Chi tiet ticket",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {"raw": "{{baseUrl}}/support-tickets/1", "host": ["{{baseUrl}}"], "path": ["support-tickets", "1"]}
+          }
+        },
+        {
+          "name": "POST - Tao yeu cau ho tro",
+          "request": {
+            "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"subject\": \"Yeu cau cap quyen kiem tra thiet bi moi\",\n  \"content\": \"Xin chao Admin, toi can duoc cap quyen de kiem tra va bao cao cac thiet bi moi nhap ve. Toi da duoc dao tao ky thuat day du. Mong Admin xem xet va phe duyet.\",\n  \"priority\": \"MEDIUM\"\n}"},
+            "url": {"raw": "{{baseUrl}}/support-tickets", "host": ["{{baseUrl}}"], "path": ["support-tickets"]}
+          }
+        },
+        {
+          "name": "PUT - Admin phan hoi ticket [Admin/Manager]",
+          "request": {
+            "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"subject\": \"Yeu cau cap quyen\",\n  \"content\": \"\",\n  \"adminResponse\": \"Da xem xet yeu cau cua ban. Chung toi se cap quyen trong vong 24h. Vui long lien he IT support neu can them ho tro.\",\n  \"status\": \"RESOLVED\",\n  \"assignedToId\": 2\n}"},
+            "url": {"raw": "{{baseUrl}}/support-tickets/1/respond", "host": ["{{baseUrl}}"], "path": ["support-tickets", "1", "respond"]}
+          }
+        },
+        {
+          "name": "DELETE - Xoa ticket [Admin]",
+          "request": {
+            "method": "DELETE", "header": [],
+            "url": {"raw": "{{baseUrl}}/support-tickets/1", "host": ["{{baseUrl}}"], "path": ["support-tickets", "1"]}
+          }
+        }
+      ]
+    }
+  ]
+}
